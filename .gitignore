@@ -1,3 +1,5 @@
 .stack-work/
 *~
 .idea
+haskell-cheatsheet.iml
+stack.yaml.lock
