@@ -1,23 +1,22 @@
 -- TODO
 -- foo` denotes either a strict version of a function (i.e., not lazy) or a slightly modified version of a function or variable with a similar name
-main :: IO ()
-main = do
-  -- Variable
-  let a = 42
-  print a
-  -- Function call
-  let a = double 5
-  -- The same function works with floats
-  let a = double 5.2
-  -- Condition
-  let a = doubleIfCondition 10
-  -- Definition
-  let a = def
-  -- End
-  print ""
+--
+--
+{- Variables -}
+-- Variable
+var = 42
 
+-- let introduces a local binding
+-- in specifies the expression that represents the value of the let block
+var2 =
+  let foo = 42
+   in foo
+
+{- Functions -}
+-- Function
 double x = x * 2
 
+-- Condition
 doubleIfCondition x
   -- An if expression must return a value, not a statement
  =
@@ -25,6 +24,23 @@ doubleIfCondition x
     then x
     else x * 2
 
--- As def doesn't take a parameter, it's not a function
--- It's a definition or a name
-def = "foo"
+{- List -}
+-- A list is a homogeneous data structure
+-- (i.e., it stores elements of the same type)
+list = [1, 2, 3]
+
+-- List concatenation
+concatenatedList = [1, 2, 3] ++ [4, 5, 6]
+
+{- String -}
+-- A string is a list of characters
+string = "hello"
+
+-- Same as
+listOfChars = ['h', 'e', 'l', 'l', 'o']
+
+main :: IO ()
+main = do
+  let v = var
+  print v
+  print ""
