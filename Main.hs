@@ -29,6 +29,9 @@ doubleIfCondition x
 -- (i.e., it stores elements of the same type)
 list = [1, 2, 3]
 
+-- A list is syntactic sugar for
+representation = 1 : 2 : 3 : [] -- [1,2,3]
+
 -- List concatenation (++ operator -> list1 ++ list2)
 -- A concatenation copies both lists (it has to iterate over the entire first
 -- list), so it can take a while
@@ -167,11 +170,11 @@ triple = (1, 2, 3)
 zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- Note that "c" and "d" are ignored
 
 {- Types -}
--- Enforce signature type (string)
+-- Enforce signature type: Char to Char
 withSignature :: [Char] -> [Char]
 withSignature st = st
 
--- With multiple parameters (int, int)
+-- With multiple parameters: Int, Int to Int
 withSignatureMultipleParameters :: Int -> Int -> Int
 withSignatureMultipleParameters x y = x + y
 
@@ -182,14 +185,15 @@ withSignatureMultipleParameters x y = x + y
 -- Double: floating-point with double the precision
 -- Bool: boolean
 -- Char: Unicode character
+-- String: just another name for [Char]
 -- Tuple: tuple
-_ = _
-
+--
 -- Type variable: generic type
 -- Functions that use type variables are called polymorphic functions
 -- Example: head
--- Usually, type variables have names with a single character
-_ = _
+-- Usually, type variables have names with a single character; for example:
+generic :: [a] -> a
+generic a = head a
 
 -- Type class is an *interface* that defines some behavior
 -- If a type is an instance of type class, then it supports and implements the
@@ -197,8 +201,25 @@ _ = _
 -- For example, == is a type class:
 -- (==) :: (Eq a) => a -> a -> Bool
 -- => is the class constraint symbol
-_ = _
+-- Another example is the show type class: show 3 => "3"
+--
+--
+{- Pattern matching -}
+-- Note: a pattern has to be exhaustive
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
 
+-- With a tuple
+withTuple (_, 0) = error "denominator is zero"
+withTuple (a, b) = a / b
+
+-- With a list
+tell :: (Show a) => [a] -> String -- Implement Show
+tell [] = "empty"
+tell (x:[]) = "one element"
+tell (x:_) = "more than one element, the first is " ++ show x
+
+-- TODO Enum?
 main :: IO ()
 main = do
   let v = var
