@@ -29,8 +29,18 @@ doubleIfCondition x
 -- (i.e., it stores elements of the same type)
 list = [1, 2, 3]
 
--- List concatenation
+-- List concatenation (++ operator -> list1 ++ list2)
+-- A concatenation copies both lists (it has to iterate over the entire first
+-- list), so it can take a while
 concatenatedList = [1, 2, 3] ++ [4, 5, 6]
+
+-- Adding an element to the beginning (: operator -> elem : list)
+-- Compared to concatenations, adding an element is instantaneous
+addingHeadToList = 1 : [2, 3]
+
+accessingListElement x = [1, 2, 3] !! x
+
+innerList = [[1, 2, 3], [4, 5, 6]]
 
 {- String -}
 -- A string is a list of characters
@@ -38,6 +48,9 @@ string = "hello"
 
 -- Same as
 listOfChars = ['h', 'e', 'l', 'l', 'o']
+
+-- Therefore, we can use the same list operation
+stringList = 'x' : ['y', 'z']
 
 main :: IO ()
 main = do
