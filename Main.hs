@@ -201,9 +201,13 @@ generic a = head a
 -- For example, == is a type class:
 -- (==) :: (Eq a) => a -> a -> Bool
 -- => is the class constraint symbol
--- Another example is the show type class: show 3 => "3"
---
---
+-- Another example is the Show type class
+showEx = show 3 -- "3"
+
+-- Read type class, can be used for conversions, for example
+readEx :: String -> Int
+readEx s = read s :: Int
+
 {- Pattern matching -}
 -- Note: a pattern has to be exhaustive
 factorial 0 = 1
@@ -219,11 +223,55 @@ tell [] = "empty"
 tell (x:[]) = "one element"
 tell (x:_) = "more than one element, the first is " ++ show x
 
--- TODO Enum?
+-- As-pattern: allow you to break up an item according to a pattern, while still
+-- keeping a reference to the entire original item
+firstLetter all@(x:xs) = "First letter of " ++ all ++ " is " ++ [x]
+
+{- Guards -}
+-- Guards: make a function to check if some property of the passed values is
+-- true or false
+guard x
+  | x < 0 = "negative"
+  | x == 0 = "zero"
+  | otherwise = "positive"
+
+-- We can use guards to implement a max function
+max' a b
+  | a < b = a
+  | otherwise = b
+
+-- We can precompute a value with where
+bmiTell weight height
+  | bmi < skinny = "underweight"
+  | bmi < normal = "good"
+  | otherwise = "overweigth"
+  where
+    bmi = weight / height ^ 2
+    skinny = 18
+    normal = 25
+
+-- Note: where is not only used with guards
+whereExample = "hello " ++ foo
+  where
+    foo = "foo"
+
+-- We can also use where bindings with pattern match
+initials firstname lastname = [f] ++ ". " ++ [l] ++ "."
+  where
+    (f:_) = firstname
+    (l:_) = lastname
+
+{- Enum -}
+data Direction
+  = North
+  | South
+  | East
+  | West
+
 main :: IO ()
 main = do
   let v = var
   print v
-  let v = zipLists
+  let v = initials "foo" "bar"
   print v
   print ""
