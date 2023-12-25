@@ -242,6 +242,7 @@ tell (x:_) = "more than one element, the first is " ++ show x
 
 -- As-pattern: allow you to break up an item according to a pattern, while still
 -- keeping a reference to the entire original item
+-- Note: (x:xs) is a list (e.g., xs matches y:z:[])
 firstLetter all@(x:xs) = "First letter of " ++ all ++ " is " ++ [x]
 
 {- Guards -}
@@ -394,13 +395,44 @@ higherOrderEx func = func 10
 higherOrderRes = (+ 3) 10
 
 zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith' _ [] _ = []
+zipWith' _ _ [] = []
 zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
 
 -- Note how (+) is passed for a (a -> b -> c) function
 zipWithEx = zipWith' (+) [1, 2, 3] [4, 5, 6]
 
+-- Flip the first two arguments
+-- It takes a function with 2 parameters and returns a function with the
+-- 2 parameters flipped
+flip' :: (a -> b -> c) -> (b -> a -> c)
+flip' f = g
+  where
+    g x y = f y x
+
+flipEx = zipWith' (flip' div) [1, 2, 3] [10, 20, 30] -- [10,10,10]
+
+{- Functional programmer toolbox -}
+-- Map a list of items
+map' :: (a -> b) -> [a] -> [b]
+map' _ [] = []
+map' f (x:xs) = f x : map' f xs
+
+mapEx = map' (+ 1) [1, 2, 3]
+
+-- Filter items
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' _ [] = []
+filter' f (x:xs)
+  | f x = x : filter' f xs
+  | otherwise = filter' f xs
+
+filterEx = filter' (> 10) [1, 2, 15, 20] -- [15,20]
+
+filterWithListComprehension xs = [x | x <- xs, x > 10]
+
 main :: IO ()
 main = do
-  let v = 42
+  let v = filterWithListComprehension [1, 2, 15, 20]
   print v
   print ""
