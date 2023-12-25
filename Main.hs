@@ -1,6 +1,14 @@
 -- TODO
 -- foo` denotes either a strict version of a function (i.e., not lazy) or a slightly modified version of a function or variable with a similar name
 --
+-- TODO
+{- Enum -}
+data Direction
+  = North
+  | South
+  | East
+  | West
+
 --
 {- Variables -}
 -- Variable
@@ -110,7 +118,9 @@ listReplicate = replicate 3 5 -- [5,5,5]
 {- List comprehensions -}
 {- A way to filter, transform, and combine lists -}
 -- Take all numbers less than or equal to 5, multiply each one by 2
--- We bind each elements  from [1..5] to x
+--
+-- Said differently: we bind each elements from [1..5] to x and we emit all the
+-- x * 2 items
 listComprehension = [x * 2 | x <- [1 .. 5]] -- [2,4,6,8,10]
 
 -- We can also add a predicate
@@ -200,7 +210,14 @@ generic a = head a
 -- behavior the type class describes
 -- For example, == is a type class:
 -- (==) :: (Eq a) => a -> a -> Bool
--- => is the class constraint symbol
+-- In this example, we take a generic type a with the constraint that it
+-- implements Eq
+eqEx :: (Eq a) => a -> a -> Bool
+eqEx x y =
+  if x == y
+    then True
+    else False
+
 -- Another example is the Show type class
 showEx = show 3 -- "3"
 
@@ -251,7 +268,7 @@ bmiTell weight height
     normal = 25
 
 -- Note: where is not only used with guards
-whereExample = "hello " ++ foo
+whereEx = "hello " ++ foo
   where
     foo = "foo"
 
@@ -261,17 +278,129 @@ initials firstname lastname = [f] ++ ". " ++ [l] ++ "."
     (f:_) = firstname
     (l:_) = lastname
 
-{- Enum -}
-data Direction
-  = North
-  | South
-  | East
-  | West
+-- Note: Equivalent to
+initials2 (f:_) (l:_) = [f] ++ ". " ++ [l] ++ "."
+
+-- A where can also be a function
+whereFunc n = add n
+  where
+    add n = n + 1
+
+-- Where with pattern matching
+wherePattern ls = "The list is " ++ what ls
+  where
+    what [] = "empty."
+    what [x] = "a singleton list."
+    what xs = "a longer list."
+
+wherePattern2 n = what n
+  where
+    what 0 = "zero"
+    what 1 = "one"
+    what v = "other"
+
+{- Let -}
+-- let is similar to where binding
+-- Difference:
+-- * Only let expressions are expressions, where bindings aren't
+--   Note: if something is an expression, then it has a value
+-- * Can't be used across guards
+-- * let are defined before, where after
+letEx n =
+  let a = n + 1
+      b = n + 2
+   in a * b
+
+-- We can also use let in list comprehension
+-- We iterate over all the elements of the list, then we emit each mult item
+-- with mult = a * b
+letListComprehension :: [(Double, Double)] -> [Double]
+letListComprehension xs = [mult | (a, b) <- xs, let mult = a * b]
+
+{- Recursion examples -}
+maximum' :: [Int] -> Int
+maximum' [] = error "empty list"
+maximum' [x] = x
+maximum' (x:xs) = max x (maximum' xs)
+
+-- Replicate using pattern matching
+replicate' :: Int -> a -> [a]
+replicate' 0 n = []
+replicate' 1 n = [n]
+replicate' times n = n : replicate' (times - 1) n
+
+-- Replicate using guards
+replicate'' :: Int -> a -> [a]
+replicate'' times n
+  | times <= 0 = []
+  | otherwise = n : replicate'' (times - 1) n
+
+take' :: Int -> [a] -> [a]
+take' count (x:xs)
+  | count <= 0 = []
+  | otherwise = x : take' (count - 1) xs
+
+reverse' :: [a] -> [a]
+reverse' [] = []
+reverse' (x:xs) = reverse' xs ++ [x]
+
+zip' :: [a] -> [b] -> [(a, b)]
+zip' _ [] = []
+zip' [] _ = []
+zip' (x1:xs1) (x2:xs2) = (x1, x2) : zip' xs1 xs2
+
+elem' :: (Eq a) => a -> [a] -> Bool
+elem' n [] = False
+elem' n (x:xs)
+  | n == x = True
+  | otherwise = elem' n xs
+
+{- Higher-order functions -}
+--
+-- Each function takes only one parameter, it works using currying.
+-- A curried function is a function that instead of taking several
+-- parameters, always takes exactly one parameter. Then, when it's called
+-- with that parameter, it returns a function that takes the next
+-- parameter, and so on.
+--
+-- If we call a function with two few parameters, we get back a partially
+-- applied function
+multiThree :: Int -> Int -> Int -> Int
+multiThree x y z = x * y * z
+
+partiallyAppliedFunc :: Int -> Int
+partiallyAppliedFunc = multiThree 3 4
+
+partiallyAppliedRes :: Int -> Int
+partiallyAppliedRes z = partiallyAppliedFunc z
+
+-- Infix functions (foo infixFunction bar; e.g., 3 + 2 => + is the infix
+-- function)
+-- Infix functions can be partially applied by using sections
+-- To section an infix function, we can surround it with parentheses
+divideByTen :: Float -> Float
+divideByTen = (/ 10)
+
+-- Another example
+isUpper :: Char -> Bool
+isUpper = (`elem` ['A' .. 'Z'])
+
+-- Higher-order function: function can take functions as parameter
+-- Example: Takes an (Int -> Int) function as parameter
+higherOrderEx :: (Int -> Int) -> Int
+higherOrderEx func = func 10
+
+-- (+ 3) is a (Int -> Int) function
+higherOrderRes = (+ 3) 10
+
+zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
+
+-- Note how (+) is passed for a (a -> b -> c) function
+zipWithEx = zipWith' (+) [1, 2, 3] [4, 5, 6]
 
 main :: IO ()
 main = do
-  let v = var
-  print v
-  let v = initials "foo" "bar"
+  let v = 42
   print v
   print ""
