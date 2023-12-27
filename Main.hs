@@ -521,8 +521,20 @@ foldFilter f = foldr (\x acc -> if f x then x : acc else acc) []
 foldLast :: [a] -> a
 foldLast xs = foldl1 (\_ x -> x) xs
 
+-- scanl and scanr are like foldl and foldr except they report all the acc
+-- values in the form of a list
+sumWithIntermediates :: (Num a) => [a] -> [a]
+sumWithIntermediates xs = scanl (+) 0 xs
+
+sumWithIntermediatesEx = sumWithIntermediates [1,2,3] -- [0,1,3,6]
+
+-- Another example, how many elements does it take for the sum of the square
+-- roots of all natural numbers to exceed 1,000
+sqrtSum :: Int
+sqrtSum = length (takeWhile (<1000) (scanl1 (+) (map sqrt [1..]))) + 1
+
 main :: IO ()
 main = do
-  let v = foldFilter (\a -> a/=3) [1, 2, 3]
+  let v = sumWithIntermediates [1,2,3]
   print v
   print ""
