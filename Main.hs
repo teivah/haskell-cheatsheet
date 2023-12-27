@@ -418,7 +418,7 @@ map' :: (a -> b) -> [a] -> [b]
 map' _ [] = []
 map' f (x:xs) = f x : map' f xs
 
-mapEx = map' (+ 1) [1, 2, 3]
+mapEx = map (+ 1) [1, 2, 3]
 
 -- Filter items
 filter' :: (a -> Bool) -> [a] -> [a]
@@ -427,12 +427,102 @@ filter' f (x:xs)
   | f x = x : filter' f xs
   | otherwise = filter' f xs
 
-filterEx = filter' (> 10) [1, 2, 15, 20] -- [15,20]
+filterEx = filter (> 10) [1, 2, 15, 20] -- [15,20]
 
 filterWithListComprehension xs = [x | x <- xs, x > 10]
 
+-- Largest number under 100,000 divisible by 3,829
+-- Because we use head on the filtered list, it doesn't matter if the list is
+-- finite or infinite, thanks to Haskell laziness, the evaluation stops when
+-- the first solution is found
+largestDivisible :: Integer
+largestDivisible = head (filter p [99999,99999..])
+    where p x = x `mod` 3829 == 0
+
+-- takeWhile takes a predicate and a list, returns the list's elements as long
+-- as the predicates is true
+firstWord = takeWhile (/= ' ') "foo bar baz" -- foo
+
+{- Lambdas -}
+--
+-- A lambda is an anonymous function that we use when we need a function only
+-- once; usually, passing it to a higher-order function
+lambdaEx = map (\x -> x + 10) [1..3] -- [11,12,13]
+-- Equivalent to the use of a partially applied function
+partiallyAppliedEx = map (+10) [1..3] -- [11,12,13]
+
+-- A lambda can take any number of parameters
+lambdaMultipleParam = zipWith (\a b -> a + b) [1..3] [10, 20, 30] -- [11,22,33]
+
+-- Lambda with pattern matching
+lambdaPatternEx = map (\(a, b) -> a + b) [(1,10),(2,20), (3,30)] -- [11,22,33]
+
+-- Flip arguments example using a lambda
+-- Note: When we write a lambda without parentheses, Haskell assumes that
+-- everything to the right of -> belongs to it
+flipWithLambda :: (a -> b -> c) -> b -> a -> c
+flipWithLambda f = \ x y -> f y x
+
+flipWithLambdaEx = flipWithLambda (div) 5 10 -- 2
+
+{- Fold -}
+-- Folds allow to reduce a data structure to a single value
+-- Use case: traverse a list to return a value
+-- A fold takes a binary function (e.g., +), a starting value (accumulator), and
+-- a list to fold up
+sumList :: (Num a) => [a] -> a
+sumList x = foldl (\acc a -> acc + a) 0 x
+
+-- Equivalent to
+sumList' x = foldl (+) 0 x
+
+-- Fold from the right
+-- Notice how in the lambda, the accumulator value comes last compared to foldl
+sumList'' x = foldr (\a acc -> a + acc) 0 x
+--
+-- When we right fold over [1,2,3], we're essentially doing this:
+-- f 1 (f 2 (f 3 acc))
+--
+-- Main difference between left and right folds: right folds work on infinite
+-- lists, whereas left ones don't
+--
+-- Note: The ++ function is much slower than :, so we usually use right folds
+-- when we’re building up new lists from a list.
+
+elem'' :: (Eq a) => a -> [a] -> Bool
+elem'' x xs = foldl (\acc a -> if a == x then True else acc) False xs
+
+-- foldl1 and foldr1 work much like foldl and foldr, except that we don't have
+-- to provide the starting accumulator
+-- They assume the first element of the list to be the starting accumulator
+-- Warning: rumtime error is empty list
+sumListWithFoldl1 :: (Num a) => [a] -> a
+sumListWithFoldl1 xs = foldl1 (+) xs
+
+-- Some fold example
+foldReverse :: [a] -> [a]
+foldReverse xs = foldl (\acc x -> x : acc) xs []
+
+foldProduct :: (Num a) => [a] -> a
+foldProduct xs = foldl1 (*) xs
+
+foldFilter :: (a -> Bool) -> [a] -> [a]
+-- Important: This version is the same as the line below where we omit xs
+-- It works because of partial application
+-- In Haskell, functions are curried by default, which means that a function
+-- that takes multiple arguments can be partially applied to fewer arguments,
+-- creating a new function
+foldFilter f = foldr (\x acc -> if f x then x : acc else acc) []
+-- foldFilter f xs = foldr (\x acc -> if f x then x : acc else acc) [] xs
+-- Note: This foldl version doesn't work as the left element of : needs to be a
+-- single element
+--foldFilter f = foldl (\acc x -> if f x then acc : x else acc) []
+
+foldLast :: [a] -> a
+foldLast xs = foldl1 (\_ x -> x) xs
+
 main :: IO ()
 main = do
-  let v = filterWithListComprehension [1, 2, 15, 20]
+  let v = foldFilter (\a -> a/=3) [1, 2, 3]
   print v
   print ""
