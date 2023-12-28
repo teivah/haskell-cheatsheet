@@ -1,14 +1,21 @@
+{- Module -}
+-- See Geometry/Cube.hs
+-- Import all the elements of the Geometry.Cube module
+-- Using `qualified` means we can access the element with the Cube prefix
+-- E.g., Cube.area
+import qualified Geometry.Cube
+
+import Data.List
+import qualified Data.Map as Map
+
+-- To exclude an element from import, we can use hiding
+-- Note that `as S` allows to create an alias
+import qualified Geometry.Sphere as S hiding (volume)
+
 -- TODO
 -- foo` denotes either a strict version of a function (i.e., not lazy) or a slightly modified version of a function or variable with a similar name
 --
 -- TODO
-{- Enum -}
-data Direction
-  = North
-  | South
-  | East
-  | West
-
 --
 {- Variables -}
 -- Variable
@@ -436,8 +443,9 @@ filterWithListComprehension xs = [x | x <- xs, x > 10]
 -- finite or infinite, thanks to Haskell laziness, the evaluation stops when
 -- the first solution is found
 largestDivisible :: Integer
-largestDivisible = head (filter p [99999,99999..])
-    where p x = x `mod` 3829 == 0
+largestDivisible = head (filter p [99999,99999 ..])
+  where
+    p x = x `mod` 3829 == 0
 
 -- takeWhile takes a predicate and a list, returns the list's elements as long
 -- as the predicates is true
@@ -447,21 +455,22 @@ firstWord = takeWhile (/= ' ') "foo bar baz" -- foo
 --
 -- A lambda is an anonymous function that we use when we need a function only
 -- once; usually, passing it to a higher-order function
-lambdaEx = map (\x -> x + 10) [1..3] -- [11,12,13]
+lambdaEx = map (\x -> x + 10) [1 .. 3] -- [11,12,13]
+
 -- Equivalent to the use of a partially applied function
-partiallyAppliedEx = map (+10) [1..3] -- [11,12,13]
+partiallyAppliedEx = map (+ 10) [1 .. 3] -- [11,12,13]
 
 -- A lambda can take any number of parameters
-lambdaMultipleParam = zipWith (\a b -> a + b) [1..3] [10, 20, 30] -- [11,22,33]
+lambdaMultipleParam = zipWith (\a b -> a + b) [1 .. 3] [10, 20, 30] -- [11,22,33]
 
 -- Lambda with pattern matching
-lambdaPatternEx = map (\(a, b) -> a + b) [(1,10),(2,20), (3,30)] -- [11,22,33]
+lambdaPatternEx = map (\(a, b) -> a + b) [(1, 10), (2, 20), (3, 30)] -- [11,22,33]
 
 -- Flip arguments example using a lambda
 -- Note: When we write a lambda without parentheses, Haskell assumes that
 -- everything to the right of -> belongs to it
 flipWithLambda :: (a -> b -> c) -> b -> a -> c
-flipWithLambda f = \ x y -> f y x
+flipWithLambda f = \x y -> f y x
 
 flipWithLambdaEx = flipWithLambda (div) 5 10 -- 2
 
@@ -479,6 +488,7 @@ sumList' x = foldl (+) 0 x
 -- Fold from the right
 -- Notice how in the lambda, the accumulator value comes last compared to foldl
 sumList'' x = foldr (\a acc -> a + acc) 0 x
+
 --
 -- When we right fold over [1,2,3], we're essentially doing this:
 -- f 1 (f 2 (f 3 acc))
@@ -488,9 +498,15 @@ sumList'' x = foldr (\a acc -> a + acc) 0 x
 --
 -- Note: The ++ function is much slower than :, so we usually use right folds
 -- when we’re building up new lists from a list.
-
 elem'' :: (Eq a) => a -> [a] -> Bool
-elem'' x xs = foldl (\acc a -> if a == x then True else acc) False xs
+elem'' x xs =
+  foldl
+    (\acc a ->
+       if a == x
+         then True
+         else acc)
+    False
+    xs
 
 -- foldl1 and foldr1 work much like foldl and foldr, except that we don't have
 -- to provide the starting accumulator
@@ -512,12 +528,18 @@ foldFilter :: (a -> Bool) -> [a] -> [a]
 -- In Haskell, functions are curried by default, which means that a function
 -- that takes multiple arguments can be partially applied to fewer arguments,
 -- creating a new function
-foldFilter f = foldr (\x acc -> if f x then x : acc else acc) []
+foldFilter f =
+  foldr
+    (\x acc ->
+       if f x
+         then x : acc
+         else acc)
+    []
+
 -- foldFilter f xs = foldr (\x acc -> if f x then x : acc else acc) [] xs
 -- Note: This foldl version doesn't work as the left element of : needs to be a
 -- single element
 --foldFilter f = foldl (\acc x -> if f x then acc : x else acc) []
-
 foldLast :: [a] -> a
 foldLast xs = foldl1 (\_ x -> x) xs
 
@@ -526,15 +548,130 @@ foldLast xs = foldl1 (\_ x -> x) xs
 sumWithIntermediates :: (Num a) => [a] -> [a]
 sumWithIntermediates xs = scanl (+) 0 xs
 
-sumWithIntermediatesEx = sumWithIntermediates [1,2,3] -- [0,1,3,6]
+sumWithIntermediatesEx = sumWithIntermediates [1, 2, 3] -- [0,1,3,6]
 
 -- Another example, how many elements does it take for the sum of the square
 -- roots of all natural numbers to exceed 1,000
 sqrtSum :: Int
-sqrtSum = length (takeWhile (<1000) (scanl1 (+) (map sqrt [1..]))) + 1
+sqrtSum = length (takeWhile (< 1000) (scanl1 (+) (map sqrt [1 ..]))) + 1
+
+{- Function application -}
+--
+-- The $ function is called the function application operator
+-- Definition:
+-- ($) :: (a -> b) -> a -> b
+-- f $ x = f x
+-- Syntactic sugar to replace parenthesis
+-- $ is the (, whereas ) is the right side of the expression
+withoutFunctionApp = sum (filter (> 10) (map (* 2) [2 .. 10]))
+
+withFunctionApp = sum $ filter (> 10) $ map (* 2) [2 .. 10]
+
+-- $ is right associative meaning f $ g $ x <=> f $ (g $ x)
+-- $ is just another function
+-- Here, every function in the list is applied to 3
+functionAppEx = map ($ 3) [(4 +), (10 *), (3 -)] -- [7,30,0]
+
+{- Function composition -}
+--
+-- Function composition is defined like this: (f º g)(x) = f(g(x)).
+-- We can use function composition with the . function
+-- (.) :: (b -> c) -> (a -> b) -> a -> c
+-- f . g = \x -> f (g x)
+--
+-- f (g (z x)) <=> f . g . z
+-- negate . sum is a function that takes a list, applies sum, and then negate
+compositionEx = map (negate . sum) [[1 .. 5], [10, 13]] -- [-15,-23]
+
+-- Applies max, cos, tan, and negate
+compositionEx2 :: Float -> Float
+compositionEx2 = negate . tan . cos . max 50
+
+withoutComposition = sum (replicate 5 (max 6 7)) -- 35
+
+withComposition = sum . replicate 5 $ max 6 7 -- 35
+
+{- Maybe -}
+-- Maybe can have either zero or just one element
+maybeEx :: Maybe Int
+maybeEx = find (> 4) [1 .. 10] -- Just 5
+
+maybeGet :: Int
+maybeGet =
+  case maybeEx of
+    Just n -> n
+    Nothing -> -1
+
+{- Map -}
+mapDSEx = do
+  -- Create
+  let m = Map.fromList [(1, "one"), (2, "two"), (3, "three")]
+  -- Lookup
+  let v = Map.lookup 1 m -- Maybe string
+  -- Insert (note how the map is immutable)
+  let m2 = Map.insert (10, "ten") m
+  -- When a duplicate is found, do an action
+  let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
+  m
+
+{- Custom data types -}
+-- Enum
+data Direction
+  = Up
+  | Down
+  | Left
+  | Right
+
+-- Create a custom data type
+-- Value constructor: a function that returns a value of a data type
+-- A shape is either a circle or a rectangle
+data Shape
+  = Circle Float Float Float
+  | Rectangle Float Float Float Float
+  -- TODO deriving?
+  deriving (Show)
+
+-- Instantiate a circle
+constructorEx = Circle 1 2 3
+
+-- Receive a shape using pattern matching
+shapeEx :: Shape -> Float
+shapeEx (Circle _ _ v) = v
+shapeEx (Rectangle _ _ _ v) = v
+
+-- To export Shape:
+--
+-- modules Foo
+-- ( Shape(..) )
+--
+-- By using `Shape(..)`, we export all the value constructor for Shape
+-- Or, we could use `Shape`, to export only the class type (in this case we
+-- also have to export a custom constructor just like `Map.fromList`)
+-- Benefit: the structure can change without breaking existing programs
+--
+--
+-- We can also use record syntax to create a handier version
+data Person = Person
+  { firstName :: String
+  , lastName :: String
+  , age :: Int
+  } deriving (Show)
+
+-- Instantiate (more readable, note: we need all the parameters)
+recordSyntaxEx = Person {firstName = "Bill", lastName = "Gates", age = 30}
+
+{- Type parameters -}
+-- Type constructors can take types as parameters to produce new types
+-- Example:
+-- data Maybe a = Nothing | Just a
+-- a is the type parameter, Maybe is a type constructor
+--
+--
+-- Type parameter is inferred, but we can make it explicit
+typeParameterEx = Just 3 :: Maybe Int
 
 main :: IO ()
 main = do
-  let v = sumWithIntermediates [1,2,3]
+  let v = mapDSEx
   print v
   print ""
