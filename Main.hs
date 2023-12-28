@@ -651,11 +651,12 @@ shapeEx (Rectangle _ _ _ v) = v
 --
 --
 -- We can also use record syntax to create a handier version
+-- Note how Person is an instance of the Show and Eq type classes
 data Person = Person
   { firstName :: String
   , lastName :: String
   , age :: Int
-  } deriving (Show)
+  } deriving (Show, Eq)
 
 -- Instantiate (more readable, note: we need all the parameters)
 recordSyntaxEx = Person {firstName = "Bill", lastName = "Gates", age = 30}
@@ -665,6 +666,7 @@ recordSyntaxEx = Person {firstName = "Bill", lastName = "Gates", age = 30}
 -- Example:
 -- data Maybe a = Nothing | Just a
 -- a is the type parameter, Maybe is a type constructor
+-- Note: a type is concrete if it doesn't take any type parameters
 --
 --
 -- Type parameter is inferred, but we can make it explicit
