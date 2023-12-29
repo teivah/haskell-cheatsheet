@@ -7,6 +7,9 @@ import qualified Geometry.Cube
 
 import Data.List
 import qualified Data.Map as Map
+import Data.Maybe (fromMaybe)
+import qualified Data.Set as Set
+import Debug.Trace
 
 -- To exclude an element from import, we can use hiding
 -- Note that `as S` allows to create an alias
@@ -17,6 +20,11 @@ import qualified Geometry.Sphere as S hiding (volume)
 --
 -- TODO
 --
+{- Tracing -}
+tracingEx = trace (show (foo)) $ foo
+  where
+    foo = 42
+
 {- Variables -}
 -- Variable
 var = 42
@@ -602,17 +610,28 @@ maybeGet =
     Just n -> n
     Nothing -> -1
 
+maybeGet' :: Int
+maybeGet' = fromMaybe 0 m -- 5
+  where
+    m = Just 5
+
 {- Map -}
+-- Map example
 mapDSEx = do
   -- Create
   let m = Map.fromList [(1, "one"), (2, "two"), (3, "three")]
   -- Lookup
   let v = Map.lookup 1 m -- Maybe string
   -- Insert (note how the map is immutable)
-  let m2 = Map.insert (10, "ten") m
+  let m2 = Map.insert 10 "ten" m
   -- When a duplicate is found, do an action
   let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
   m
+
+-- Set example
+setDSEx = do
+  let m = Set.fromList [1, 2, 3]
+  0
 
 {- Custom data types -}
 -- Enum
@@ -661,6 +680,21 @@ data Person = Person
 -- Instantiate (more readable, note: we need all the parameters)
 recordSyntaxEx = Person {firstName = "Bill", lastName = "Gates", age = 30}
 
+data DataEx
+  = Foo
+  | Bar
+  | Baz
+  deriving (Eq, Ord, Bounded, Enum)
+
+-- Thanks to Ord type class, we can compare values
+ordEx = Foo < Bar
+
+-- Thanks to Bounded type class, we can get the min or max value
+boundedEx = (minBound :: DataEx, maxBound :: DataEx) -- (Foo,Baz)
+
+-- Thanks to Enum type class, we can get the predecessor or successor
+enumEx = (pred Bar, succ Bar) -- (Foo,Baz)
+
 {- Type parameters -}
 -- Type constructors can take types as parameters to produce new types
 -- Example:
@@ -672,8 +706,85 @@ recordSyntaxEx = Person {firstName = "Bill", lastName = "Gates", age = 30}
 -- Type parameter is inferred, but we can make it explicit
 typeParameterEx = Just 3 :: Maybe Int
 
+{- Type synonyms -}
+--
+-- A type synonym is a type that can be used interchangeably
+-- type String = [Char]
+--
+-- We can use type synonyms to make a signature easier to ead
+type PhoneNumber = String
+
+type Name = String
+
+registerPhone :: PhoneNumber -> Name -> Bool
+registerPhone _ _ = True
+
+-- Type synonyms can be parameterized
+type AssocList k v = [(k, v)]
+
+-- To instantiate an AssocList
+assocListEx = [(1, 2), (3, 4), (5, 6)] :: AssocList Int Int
+
+-- A type synonym can also be partially applied
+type IntMap v = Map.Map Int v
+
+-- Is equivalent to
+type IntMap' = Map.Map Int
+
+-- Either is either left or right
+data Either' a b
+  = Left' a
+  | Right' b
+  deriving (Eq, Ord, Read, Show)
+
+{- Recursive data structures -}
+--
+-- List example
+-- Note: Cons is another word for `:`
+data List' a
+  = Empty'
+  | Cons a (List' a)
+  deriving (Show, Read, Eq, Ord)
+
+-- Tree example
+data Tree' a
+  = EmptyTree'
+  | Node' a (Tree' a) (Tree' a) -- Left and right
+  deriving (Show)
+
+singleton' :: a -> Tree' a
+singleton' x = Node' x EmptyTree' EmptyTree'
+
+treeInsert :: (Ord a) => a -> Tree' a -> Tree' a
+treeInsert x EmptyTree' = singleton' x
+treeInsert x (Node' a left right)
+  | x == a = Node' x left right
+  | x < a = Node' a (treeInsert x left) right
+  | x > a = Node' a left (treeInsert x right)
+
+-- When we define functions as operators, we can define a fixity
+-- Syntax:
+-- infixr|infixrl precedence operator
+-- * precedence is a number between 0 and 9
+-- * operator is the operator we are defining the associativity and precedence
+--   for
+-- Here, we define a `++++` operator with right associativity and a precedence
+-- level of 5
+-- It means if we have an expression involving multiple :-: operators,
+-- the grouping starts from the rightmost operator
+infixr 5 ++++
+
+(++++) :: [a] -> [a] -> [a]
+[] ++++ ys = ys
+(x:xs) ++++ ys = x : (xs ++++ ys)
+
+matching = 0
+
+foo = length ([4] ++ [] ++ [])
+
 main :: IO ()
 main = do
-  let v = mapDSEx
-  print v
+  let a = [] :: [[Int]]
+  let v = a ++ [[1,2,3]] ++ [[4,5,6]]
+  print (v !! 0)
   print ""

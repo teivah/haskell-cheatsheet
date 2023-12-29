@@ -2,8 +2,8 @@
 -- A Haskell program is a collection of modules
 -- Here, the module only exports the area function
 module Geometry.Cube
-( area
-) where
+  ( area
+  ) where
 
 area :: Float -> Float -> Float -> Float
 area x y z = x * y * z
