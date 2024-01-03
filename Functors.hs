@@ -4,9 +4,32 @@ module Functors
 
 import Control.Applicative as A
 
-{---------------}
-{----- 101 -----}
-{---------------}
+{--------------------}
+{----- 🚨 TL;DR -----}
+{--------------------}
+-- * Functor: any data type that allows for mapping a function over values in a
+--   context (box), without altering the context itself
+-- * fmap: takes a function and a functor value, applies the function and
+--   applies that function over the functor value
+--
+--   (a -> b) -> f a -> f b
+--   --------    ---    ---
+--   Function  Functor Functor
+--
+-- * Applicative: any data type that allows for applying functions wrapped in
+--   a context to values in the same context
+-- * <*>: takes a functor value that has a function in it and another functor,
+--   and extracts that function from the first functor and then maps it over
+--   the second one
+--
+--   f (a -> b)    ->    f a -> f b
+--   ----------          ---    ---
+--   Functor function  Functor Functor
+del = ()
+
+{-------------------}
+{----- Functor -----}
+{-------------------}
 -- A functor is a type class that abstracts the concept of mapping a function
 -- over elements
 -- For example: list, Maybe, Either, IO, etc. are instances of the functor type
@@ -19,12 +42,12 @@ import Control.Applicative as A
 class Functor' f where
   -- Takes a function that maps a `a` into a `b` and a `a` box, returns a `b`
   -- box
-  -- 🚨 Said differently: applies a function to the element inside the box
+  -- 💡 Said differently: applies a function to the element inside the box
   -- fmap applies a function to the value while preserving its context
   --
   -- Two possible analogies for fmap:
-  -- * A function that takes a function and a functor value and then maps that
-  --   function over the functor value
+  -- * A function that takes a function and a functor value and then applies
+  --   that function over the functor value
   -- * A function that takes a function and lifts (see below) that function so
   --   it operates on functor values
   -- See `res/fmap.png`
@@ -95,9 +118,20 @@ instance Applicative' Maybe where
   Nothing <*> _ = Nothing
   -- Note: something in this example is a Maybe f value
   -- Applies the function inside Just to something
-  -- 🚨 First argument is at the left of <*>, it's Just f
-  -- The second is something
-  (Just f) <*> something = fmap f something
+  -- 💡 First argument is at the left of <*>: Just f, the second arg is a
+  -- Note: This is a convention followed in the context of the Applicative type
+  -- class
+  (Just f) <*> a = fmap f a
+
+-- List implementation of Applicative
+instance Applicative' [] where
+  pure x = [x]
+  -- fs is a functor value with a function, xs is a functor value
+  -- It applies every possible function from the left list to every possible
+  -- value from the right list
+  -- The result being every possible combination of applying the functions to
+  -- the values
+  fs <*> xs = [f x | f <- fs, x <- xs]
 
 applicativeEx = do
   -- <*> takes a Just functor with the function (+3) insides and the Just
@@ -106,9 +140,12 @@ applicativeEx = do
   let b = A.pure (+ 3) A.<*> Just 9 -- Just 12
   -- We can even chain calls
   let c = A.pure (+) A.<*> Just 3 A.<*> Nothing -- Nothing
+  -- With lists
+  let d = [(+ 1), (* 2)] A.<*> [1, 2, 3] -- [2,3,4,2,4,6]
+  let e = [(+), (*)] A.<*> [1, 2] A.<*> [3, 4] -- [4,5,5,6,3,4,6,8]
   -- We can also use <$> which is an infix synonym for fmap
   -- Definition:
   -- (<$>) :: (Functor f) => (a -> b) -> f a -> f b
   -- f <$> x = fmap f x
-  let d = (++) A.<$> Just "foo" A.<*> Just "bar" -- Just "foobar"
+  let f = (++) A.<$> Just "foo" A.<*> Just "bar" -- Just "foobar"
   ()
