@@ -1,6 +1,8 @@
-module Functor
-  ( 
+module Functors
+  ( applicativeEx
   ) where
+
+import Control.Applicative as A
 
 {---------------}
 {----- 101 -----}
@@ -25,6 +27,7 @@ class Functor' f where
   --   function over the functor value
   -- * A function that takes a function and lifts (see below) that function so
   --   it operates on functor values
+  -- See `res/fmap.png`
   fmap' :: (a -> b) -> f a -> f b
 
 -- Map is just an fmap that works only with lists:
@@ -66,3 +69,46 @@ addOneF :: Functor f => f Int -> f Int
 -- addOneF is a function that takes a functor over a number and returns a
 -- functor over a number
 addOneF = fmap (+ 1)
+
+{-----------------------}
+{----- Applicative -----}
+{-----------------------}
+-- Applicative is the following type class (no default implementation)
+class (Functor f) =>
+      Applicative' f
+  where
+  -- Take a value of any type and return an applicative value with that value
+  -- inside (analogy: inside of a box)
+  pure :: a -> f a
+  -- Some similarities with fmap:
+  -- * fmap takes a function and a functor value and applies the function
+  --   inside the functor value
+  -- * <*> (reads as "applies") takes a functor value that has a function in it
+  --   and another functor, and extracts that function from the first functor
+  --   and then maps it over the second one
+  -- See `res/<*>.png`
+  (<*>) :: f (a -> b) -> f a -> f b
+
+-- Maybe implementation of Applicative
+instance Applicative' Maybe where
+  pure = Just
+  Nothing <*> _ = Nothing
+  -- Note: something in this example is a Maybe f value
+  -- Applies the function inside Just to something
+  -- 🚨 First argument is at the left of <*>, it's Just f
+  -- The second is something
+  (Just f) <*> something = fmap f something
+
+applicativeEx = do
+  -- <*> takes a Just functor with the function (+3) insides and the Just
+  -- functor 9
+  let a = Just (+ 3) A.<*> Just 9 -- Just 12
+  let b = A.pure (+ 3) A.<*> Just 9 -- Just 12
+  -- We can even chain calls
+  let c = A.pure (+) A.<*> Just 3 A.<*> Nothing -- Nothing
+  -- We can also use <$> which is an infix synonym for fmap
+  -- Definition:
+  -- (<$>) :: (Functor f) => (a -> b) -> f a -> f b
+  -- f <$> x = fmap f x
+  let d = (++) A.<$> Just "foo" A.<*> Just "bar" -- Just "foobar"
+  ()

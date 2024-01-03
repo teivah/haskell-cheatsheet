@@ -7,11 +7,11 @@ import qualified Geometry.Cube
 
 import Data.List
 import Debug.Trace
-import Function
-import Functor
+import Functions
+import Functors
 import IO
-import List
-import Type
+import Lists
+import Types
 
 -- To exclude an element from import, we can use hiding
 -- Note that `as S` allows to create an alias
@@ -70,6 +70,6 @@ foo = length ([4] ++ [] ++ [])
 
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = 42
+  let v = Functors.applicativeEx
   print v
   print ""
