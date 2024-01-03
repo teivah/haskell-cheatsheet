@@ -21,10 +21,18 @@ import Control.Applicative as A
 -- * <*>: takes a functor value that has a function in it and another functor,
 --   and extracts that function from the first functor and then maps it over
 --   the second one
+--   Works with a left and right operand
 --
 --   f (a -> b)    ->    f a -> f b
 --   ----------          ---    ---
 --   Functor function  Functor Functor
+--
+-- * <$>: Infix version of fmap
+--   Works with a left and right operand
+--
+--   (Functor f) => (a -> b) -> f a -> f b
+--   -----------    --------    ---    ---
+-- With f a functor Function  Functor Functor
 del = ()
 
 {-------------------}
@@ -133,6 +141,14 @@ instance Applicative' [] where
   -- the values
   fs <*> xs = [f x | f <- fs, x <- xs]
 
+-- IO implementation of Applicative
+instance Applicative' IO where
+  pure = return
+  a <*> b = do
+    f <- a
+    x <- b
+    return (f x)
+
 applicativeEx = do
   -- <*> takes a Just functor with the function (+3) insides and the Just
   -- functor 9
@@ -143,9 +159,13 @@ applicativeEx = do
   -- With lists
   let d = [(+ 1), (* 2)] A.<*> [1, 2, 3] -- [2,3,4,2,4,6]
   let e = [(+), (*)] A.<*> [1, 2] A.<*> [3, 4] -- [4,5,5,6,3,4,6,8]
+  --
   -- We can also use <$> which is an infix synonym for fmap
   -- Definition:
   -- (<$>) :: (Functor f) => (a -> b) -> f a -> f b
   -- f <$> x = fmap f x
+  -- 💡 Same as <*>: left and right operand
   let f = (++) A.<$> Just "foo" A.<*> Just "bar" -- Just "foobar"
+  -- Applies ++ on getLine and getLine
+  let g = (++) A.<$> getLine A.<*> getLine
   ()
