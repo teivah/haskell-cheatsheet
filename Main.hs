@@ -8,6 +8,7 @@ import qualified Geometry.Cube
 import Data.List
 import Debug.Trace
 import Functions
+import qualified Control.Applicative
 import Functors
 import IO
 import Lists
@@ -70,6 +71,7 @@ foo = length ([4] ++ [] ++ [])
 
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = Functors.applicativeEx
+  let v = Functors.infixEx
   print v
-  print ""
+--  let v = [(+1)] <*> Just(5)
+--  print v

@@ -3,3 +3,9 @@ build:
 
 format:
   hindent Main.hs
+
+play:
+  ghci
+
+ghci:
+  ghci Experiment.hs

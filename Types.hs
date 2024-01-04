@@ -242,3 +242,25 @@ treeInsert x (Node' a left right)
   | x == a = Node' x left right
   | x < a = Node' a (treeInsert x left) right
   | x > a = Node' a left (treeInsert x right)
+
+{-------------------}
+{----- newtype -----}
+{-------------------}
+-- newtype use case: when we want to just take one type and wrap it in something
+-- to present it as another type
+--
+-- Compared to data:
+-- * Faster
+-- * Only one value constructor and that value constructor can have only one
+--   field
+--
+-- An example: CharList :: [Char] -> CharList
+newtype CharList = CharList { getCharList :: [Char] } deriving (Eq, Show)
+
+charListEx = CharList "foo"
+
+{------------------}
+{----- Monoid -----}
+{------------------}
+-- Any data type whole values can be combined together with a binary operation
+foo = 0

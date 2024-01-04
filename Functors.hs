@@ -1,8 +1,9 @@
 module Functors
-  ( applicativeEx
+  ( infixEx
   ) where
 
 import Control.Applicative as A
+import qualified Data.Traversable
 
 {--------------------}
 {----- 🚨 TL;DR -----}
@@ -18,6 +19,8 @@ import Control.Applicative as A
 --
 -- * Applicative: any data type that allows for applying functions wrapped in
 --   a context to values in the same context
+--   Difference with functor: higher-level abstraction that allows to apply
+--   functions to multiple wrapped values in a context
 -- * <*>: takes a functor value that has a function in it and another functor,
 --   and extracts that function from the first functor and then maps it over
 --   the second one
@@ -27,13 +30,15 @@ import Control.Applicative as A
 --   ----------          ---    ---
 --   Functor function  Functor Functor
 --
--- * <$>: Infix version of fmap
+-- * <$>: fmap version for applicative
+--   It puts something inside a box
+--   Can be used on functions as an input to <*>
 --   Works with a left and right operand
 --
 --   (Functor f) => (a -> b) -> f a -> f b
 --   -----------    --------    ---    ---
 -- With f a functor Function  Functor Functor
-del = ()
+tldr = ()
 
 {-------------------}
 {----- Functor -----}
@@ -50,7 +55,7 @@ del = ()
 class Functor' f where
   -- Takes a function that maps a `a` into a `b` and a `a` box, returns a `b`
   -- box
-  -- 💡 Said differently: applies a function to the element inside the box
+  -- 🚨 Said differently: applies a function to the element inside the box
   -- fmap applies a function to the value while preserving its context
   --
   -- Two possible analogies for fmap:
@@ -105,6 +110,8 @@ addOneF = fmap (+ 1)
 {----- Applicative -----}
 {-----------------------}
 -- Applicative is the following type class (no default implementation)
+-- Use case: combine different computations (I/O, combinations that might have
+-- failed, etc.)
 class (Functor f) =>
       Applicative' f
   where
@@ -126,7 +133,7 @@ instance Applicative' Maybe where
   Nothing <*> _ = Nothing
   -- Note: something in this example is a Maybe f value
   -- Applies the function inside Just to something
-  -- 💡 First argument is at the left of <*>: Just f, the second arg is a
+  -- 🚨 First argument is at the left of <*>: Just f, the second arg is a
   -- Note: This is a convention followed in the context of the Applicative type
   -- class
   (Just f) <*> a = fmap f a
@@ -141,6 +148,15 @@ instance Applicative' [] where
   -- the values
   fs <*> xs = [f x | f <- fs, x <- xs]
 
+-- ZipList implementation of Applicative
+-- If we don't need combinations but only applying the first function to the
+-- first value, the second function to the second value, etc. we need the
+-- ZipList applicative
+instance Applicative' ZipList where
+  -- Note how pure produces a infinite list
+  pure x = ZipList (repeat x)
+  ZipList fs <*> ZipList xs = ZipList (zipWith (\f x -> f x) fs xs)
+
 -- IO implementation of Applicative
 instance Applicative' IO where
   pure = return
@@ -152,20 +168,83 @@ instance Applicative' IO where
 applicativeEx = do
   -- <*> takes a Just functor with the function (+3) insides and the Just
   -- functor 9
-  let a = Just (+ 3) A.<*> Just 9 -- Just 12
-  let b = A.pure (+ 3) A.<*> Just 9 -- Just 12
+  let _ = Just (+ 3) A.<*> Just 9 -- Just 12
+  let _ = A.pure (+ 3) A.<*> Just 9 -- Just 12
   -- We can even chain calls
-  let c = A.pure (+) A.<*> Just 3 A.<*> Nothing -- Nothing
+  let _ = A.pure (+) A.<*> Just 3 A.<*> Nothing -- Nothing
   -- With lists
-  let d = [(+ 1), (* 2)] A.<*> [1, 2, 3] -- [2,3,4,2,4,6]
-  let e = [(+), (*)] A.<*> [1, 2] A.<*> [3, 4] -- [4,5,5,6,3,4,6,8]
-  --
-  -- We can also use <$> which is an infix synonym for fmap
-  -- Definition:
-  -- (<$>) :: (Functor f) => (a -> b) -> f a -> f b
-  -- f <$> x = fmap f x
-  -- 💡 Same as <*>: left and right operand
-  let f = (++) A.<$> Just "foo" A.<*> Just "bar" -- Just "foobar"
-  -- Applies ++ on getLine and getLine
-  let g = (++) A.<$> getLine A.<*> getLine
+  let _ = [(+ 1), (* 2)] A.<*> [1, 2, 3] -- [2,3,4,2,4,6]
+  let _ = [(+), (*)] A.<*> [1, 2] A.<*> [3, 4] -- [4,5,5,6,3,4,6,8]
   ()
+
+-- We can also use <$> which is an infix synonym for fmap
+-- Definition:
+-- (<$>) :: (Functor f) => (a -> b) -> f a -> f b
+-- f <$> x = fmap f x
+-- 🚨 Same as <*>: left and right operand
+infixEx = do
+  -- Apply +1 on a value inside a box
+  let _ = (+1) A.<$> (Just 5) -- Just 6
+  -- 🚨 Partial application, we moved (2 +) inside a box
+  let _ = (\a b -> a + b) A.<$> (Just 2) -- Just (2 +)
+  -- In conjunction with <*>
+  let _ = (\a b -> a + b) A.<$> (Just 2) A.<*> (Just 3) -- Just 5
+  -- Another example to make things clear
+  -- We move the Int -> Int function inside a box [Int -> Int]
+  let a = (\a b -> a + b) A.<$> [1] -- [Int -> Int]
+  -- In conjunction with <*>
+  let b = (\a b -> a + b) A.<$> [1] A.<*> [1,2,3] -- [2,3,4]
+  b
+
+-- Benefits of applicative over functors: allow to apply function(s) to multiple
+-- wrapped values in a context
+benefitsApplicative = do
+  -- Using functor
+  -- In this case, result is a Just (2 +), we can't apply it directly to maybeY
+  -- Note fmap would work if add was an Int -> Int function
+  -- Here add is an Int -> Int -> Int function
+  let a = fmap add maybeX -- Just (2 +)
+  -- This code doesn't compile as fmap would accept a (2 +) function, not
+  -- Just (2 +)
+  -- let b = a maybeY
+  -- Using applicative
+  let result = add A.<$> maybeX A.<*> maybeY -- Just 5
+  --           ----------------
+  -- Transforms add into a function inside the Maybe context
+  --          Maybe (Int -> Int)
+  --                            -----
+  --                 Applies the function to maybeY
+  ()
+  where
+    add x y = x + y
+    maybeX = Just 2
+    maybeY = Just 3
+
+-- liftA2: applies a function between two applicatives
+-- liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c
+liftA2Ex = do
+  let _ = A.liftA2 (:) (Just 3) (Just [4]) -- Just [3,4]
+  -- Same as
+  let _ = (:) A.<$> Just 3 A.<*> Just [4] -- Just [3,4]
+  ()
+
+-- sequenceA: takes a list of applicative values and returns an applicative
+-- values that has a list as its result value
+sequenceAEx = do
+  let _ = sequenceA [Just 1, Just 2] -- Just [1,2]
+  -- Useful when we have a list of functions and we want to feed the same input
+  -- to all of them and then view the list of results
+  -- For example, we have a number and we're wondering if it satisfies a list of
+  -- predicates
+  -- Without sequenceA:
+  let a = map (\f -> f 7) [(>4),(<10),odd] -- [True,True,True]
+  let b = and $ a -- True
+  -- With sequenceA
+  let a = sequenceA [(>4),(<10),odd] 7 -- [True,True,True]
+  let b = and $ a -- True
+  ()
+
+-- Applicative laws
+-- Most important law:
+-- pure f <*> x = fmap f x
+law = ()
