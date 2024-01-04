@@ -2,10 +2,7 @@ build:
   ghcid --command="stack ghci Main.hs" --test=":main"
 
 format:
-  hindent Main.hs
+  find . -name '*.hs' -exec hindent {} \;
 
-play:
-  ghci
-
-ghci:
+xp:
   ghci Experiment.hs

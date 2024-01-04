@@ -255,7 +255,9 @@ treeInsert x (Node' a left right)
 --   field
 --
 -- An example: CharList :: [Char] -> CharList
-newtype CharList = CharList { getCharList :: [Char] } deriving (Eq, Show)
+newtype CharList = CharList
+  { getCharList :: [Char]
+  } deriving (Eq, Show)
 
 charListEx = CharList "foo"
 

@@ -152,8 +152,9 @@ instance Applicative' [] where
 -- If we don't need combinations but only applying the first function to the
 -- first value, the second function to the second value, etc. we need the
 -- ZipList applicative
-instance Applicative' ZipList where
+instance Applicative' ZipList
   -- Note how pure produces a infinite list
+                                            where
   pure x = ZipList (repeat x)
   ZipList fs <*> ZipList xs = ZipList (zipWith (\f x -> f x) fs xs)
 
@@ -184,7 +185,7 @@ applicativeEx = do
 -- 🚨 Same as <*>: left and right operand
 infixEx = do
   -- Apply +1 on a value inside a box
-  let _ = (+1) A.<$> (Just 5) -- Just 6
+  let _ = (+ 1) A.<$> (Just 5) -- Just 6
   -- 🚨 Partial application, we moved (2 +) inside a box
   let _ = (\a b -> a + b) A.<$> (Just 2) -- Just (2 +)
   -- In conjunction with <*>
@@ -193,7 +194,7 @@ infixEx = do
   -- We move the Int -> Int function inside a box [Int -> Int]
   let a = (\a b -> a + b) A.<$> [1] -- [Int -> Int]
   -- In conjunction with <*>
-  let b = (\a b -> a + b) A.<$> [1] A.<*> [1,2,3] -- [2,3,4]
+  let b = (\a b -> a + b) A.<$> [1] A.<*> [1, 2, 3] -- [2,3,4]
   b
 
 -- Benefits of applicative over functors: allow to apply function(s) to multiple
@@ -237,10 +238,10 @@ sequenceAEx = do
   -- For example, we have a number and we're wondering if it satisfies a list of
   -- predicates
   -- Without sequenceA:
-  let a = map (\f -> f 7) [(>4),(<10),odd] -- [True,True,True]
+  let a = map (\f -> f 7) [(> 4), (< 10), odd] -- [True,True,True]
   let b = and $ a -- True
   -- With sequenceA
-  let a = sequenceA [(>4),(<10),odd] 7 -- [True,True,True]
+  let a = sequenceA [(> 4), (< 10), odd] 7 -- [True,True,True]
   let b = and $ a -- True
   ()
 

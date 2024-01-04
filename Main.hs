@@ -5,10 +5,10 @@
 -- E.g., Cube.area
 import qualified Geometry.Cube
 
+import qualified Control.Applicative
 import Data.List
 import Debug.Trace
 import Functions
-import qualified Control.Applicative
 import Functors
 import IO
 import Lists
