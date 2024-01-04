@@ -1,4 +1,4 @@
-module Functors
+module AdvancedTypes
   ( infixEx
   ) where
 
@@ -8,16 +8,17 @@ import qualified Data.Traversable
 {--------------------}
 {----- 🚨 TL;DR -----}
 {--------------------}
--- * Functor: any data type that allows for mapping a function over values in a
+-- * Functor: an abstractions that allows for mapping a function over values in a
 --   context (box), without altering the context itself
 -- * fmap: takes a function and a functor value, applies the function and
 --   applies that function over the functor value
 --
---   (a -> b) -> f a -> f b
---   --------    ---    ---
---   Function  Functor Functor
+--   (a -> b)   ->   f a -> f b
+--   --------        ---    ---
+--   Function      Functor Functor
+-- value to value
 --
--- * Applicative: any data type that allows for applying functions wrapped in
+-- * Applicative: an abstraction that allows for applying functions wrapped in
 --   a context to values in the same context
 --   Difference with functor: higher-level abstraction that allows to apply
 --   functions to multiple wrapped values in a context
@@ -26,18 +27,28 @@ import qualified Data.Traversable
 --   the second one
 --   Works with a left and right operand
 --
---   f (a -> b)    ->    f a -> f b
---   ----------          ---    ---
---   Functor function  Functor Functor
+--   f (a -> b)   ->   f a -> f b
+--   ----------        ---    ---
+-- Functor function  Functor Functor
+--  value to value
 --
 -- * <$>: fmap version for applicative
 --   It puts something inside a box
 --   Can be used on functions as an input to <*>
 --   Works with a left and right operand
 --
---   (Functor f) => (a -> b) -> f a -> f b
---   -----------    --------    ---    ---
--- With f a functor Function  Functor Functor
+--   (Functor f)   =>   (a -> b)   ->   f a -> f b
+--   -----------        --------        ---    ---
+-- With f a functor     Function      Functor Functor
+--                   value to value
+--
+-- * Monad: TODO
+-- * >>= (bind): TODO
+--
+--   (Monad m)  =>  m a -> (a -> m b)  ->  m b
+--   ---------      ---    ----------      ---
+-- With m a monad  Monad    Function      Monad
+--                       value to Monad
 tldr = ()
 
 {-------------------}
@@ -205,9 +216,10 @@ benefitsApplicative = do
   -- Note fmap would work if add was an Int -> Int function
   -- Here add is an Int -> Int -> Int function
   let a = fmap add maybeX -- Just (2 +)
-  -- This code doesn't compile as fmap would accept a (2 +) function, not
-  -- Just (2 +)
+  -- The following line doesn't compile as fmap would accept a (2 +) function,
+  -- not Just (2 +)
   -- let b = a maybeY
+  --
   -- Using applicative
   let result = add A.<$> maybeX A.<*> maybeY -- Just 5
   --           ----------------
@@ -249,3 +261,18 @@ sequenceAEx = do
 -- Most important law:
 -- pure f <*> x = fmap f x
 law = ()
+
+{------------------}
+{----- Monads -----}
+{------------------}
+-- An extension of applicative
+-- Provide a solution to the following problem: how do we apply a function of
+-- type `a -> m b` to a value of type `m a`
+--
+-- The Monad function is called bind:
+-- (>>=) :: (Monad m) => m a -> (a -> m b) -> m b
+-- Example:
+-- (>>=) :: (Monad Either) => Just Int -> (Int -> Just String) -> Just String
+m = do
+  let _ = (\x -> Just (x + 1))
+  ()

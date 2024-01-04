@@ -1,5 +1,5 @@
 module Types
-  ( 
+  ( foldableEx
   ) where
 
 import Data.List
@@ -55,7 +55,7 @@ eqEx x y =
 --    (/=) :: a -> a -> Bool
 --    x == y = not (x /= y)
 --    x /= y = not (x == y)
--- Note: It's not mandatory to implement the function bodies (stay abstract?)
+-- 🚨 It's not mandatory to implement the function bodies
 --
 -- Deriving type class by hand (i.e., implementing a type class)
 data TrafficLight
@@ -246,8 +246,11 @@ treeInsert x (Node' a left right)
 {-------------------}
 {----- newtype -----}
 {-------------------}
--- newtype use case: when we want to just take one type and wrap it in something
--- to present it as another type
+-- newtype use cases:
+-- * When we want to just take one type and wrap it in something to present it
+--   as another type
+-- * When we want to take an existing type and wrap it in a new type to make it
+--   an instance of a type class
 --
 -- Compared to data:
 -- * Faster
@@ -264,5 +267,63 @@ charListEx = CharList "foo"
 {------------------}
 {----- Monoid -----}
 {------------------}
--- Any data type whole values can be combined together with a binary operation
-foo = 0
+-- A monoid is a made up of:
+-- * An associative binary function
+-- * A value that acts as an identity with respect to that function
+--   => Meaning: if we call the function with the identity and whatever
+--               value, the result is always equal to this value
+--               Example: * and 1, ++ and []
+-- Definition
+class Monoid' m where
+  -- Identity
+  mempty' :: m
+  -- Binary function
+  mappend' :: m -> m -> m
+  -- Takes a list of monoid values and reduces them to a single value
+  mconcat' :: [m] -> m
+  mconcat' = foldr mappend' mempty'
+
+-- Monoid laws:
+-- * mempty `mappend` x = x
+-- * x `mappend` mempty = x
+-- * (x `mappend` y) `mappend` z = x `mappend` (y `mappend` z)
+--   => Associativity
+--
+-- List implementation of Monoid
+instance Monoid' [a] where
+  mempty' = []
+  mappend' = (++)
+
+-- Maybe implementation of Monoid
+-- Notice the class constraint: Maybe a is an instance of Monoid only if a is
+-- an instance of a monoid
+--instance Monoid a => Monoid (Maybe a) where
+--  mempty = Nothing
+--  Nothing `mappend` m = m
+--  m `mappend` Nothing = m
+--  Just m1 `mappend` Just m2 = Just (m1 `mappend` m2)
+--
+monoidEx = do
+  let _ = [1, 2, 3] `mappend` [4, 5, 6] -- [1,2,3,4,5,6]
+  let _ = Nothing `mappend` Just "foo" -- Just "foo"
+  ()
+
+{--------------------}
+{----- Foldable -----}
+{--------------------}
+-- Foldable is for things that can be folded up
+-- The foldMap function in the Foldable type class has the following type:
+-- foldMap :: (Monoid m, Foldable t) => (a -> m) -> t a -> m
+--
+-- Tree implementation of Foldable
+instance Foldable Tree' where
+  foldMap f EmptyTree' = mempty
+  foldMap f (Node' x l r) = foldMap f l `mappend` f x `mappend` foldMap f r
+
+foldableEx = do
+  -- Using foldl to traverse a tree
+  let _ = foldl (+) 0 tree -- 15
+  ()
+  where
+    tree :: Tree' Int
+    tree = Node' 5 (Node' 10 EmptyTree' EmptyTree') EmptyTree'

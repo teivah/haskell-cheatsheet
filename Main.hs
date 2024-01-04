@@ -5,11 +5,11 @@
 -- E.g., Cube.area
 import qualified Geometry.Cube
 
+import AdvancedTypes
 import qualified Control.Applicative
 import Data.List
 import Debug.Trace
 import Functions
-import Functors
 import IO
 import Lists
 import Types
@@ -48,30 +48,13 @@ triple = (1, 2, 3)
 -- Produce a list of pairs based on the matching elements in a list
 zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- Note that "c" and "d" are ignored
 
--- When we define functions as operators, we can define a fixity
--- Syntax:
--- infixr|infixrl precedence operator
--- * precedence is a number between 0 and 9
--- * operator is the operator we are defining the associativity and precedence
---   for
--- Here, we define a `++++` operator with right associativity and a precedence
--- level of 5
--- It means if we have an expression involving multiple :-: operators,
--- the grouping starts from the rightmost operator
--- TODO Not clear
-infixr 5 ++++
-
-(++++) :: [a] -> [a] -> [a]
-[] ++++ ys = ys
-(x:xs) ++++ ys = x : (xs ++++ ys)
-
 matching = 0
 
 foo = length ([4] ++ [] ++ [])
 
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = Functors.infixEx
+  let v = Types.foldableEx
   print v
 --  let v = [(+1)] <*> Just(5)
 --  print v

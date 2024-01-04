@@ -176,6 +176,37 @@ filter' f (x:xs)
   | f x = x : filter' f xs
   | otherwise = filter' f xs
 
+{-----------------}
+{----- Infix -----}
+{-----------------}
+-- Infix functions: binary function that is typically written between its
+-- arguments
+-- + is an infix function
+infixEx = do
+  -- Infix notation
+  let _ = 10 + 10
+  -- Prefix notation (equivalent)
+  let _ = (+) 10 10
+  ()
+
+-- When we define functions as operators, we can define a fixity
+-- Syntax:
+-- infixr|infixrl precedence operator:
+-- * precedence is a number between 0 and 9
+-- * operator is the operator we are defining the associativity and precedence
+--   for
+-- Here, we define a `++++` operator with right associativity and a precedence
+-- level of 5
+-- It means if we have an expression involving multiple :-: operators,
+-- the grouping starts from the rightmost operator
+-- TODO Not clear
+-- TODO In this case, the first argument is given to the left, why?
+infixr 5 ++++
+
+(++++) :: [a] -> [a] -> [a]
+[] ++++ ys = ys
+(x:xs) ++++ ys = x : (xs ++++ ys)
+
 {----------------------------------}
 {----- Higher-order functions -----}
 {----------------------------------}
@@ -196,8 +227,6 @@ partiallyAppliedFunc = multiThree 3 4
 partiallyAppliedRes :: Int -> Int
 partiallyAppliedRes z = partiallyAppliedFunc z
 
--- Infix functions (foo infixFunction bar; e.g., 3 + 2 => + is the infix
--- function)
 -- Infix functions can be partially applied by using sections
 -- To section an infix function, we can surround it with parentheses
 divideByTen :: Float -> Float
