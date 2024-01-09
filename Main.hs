@@ -54,7 +54,7 @@ foo = length ([4] ++ [] ++ [])
 
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = Types.foldableEx
+  let v = AdvancedTypes.guardBenefits'
   print v
---  let v = [(+1)] <*> Just(5)
+--  let v = Just 9 >>= (\x -> return (x > 8))
 --  print v

@@ -1,13 +1,17 @@
 module AdvancedTypes
-  ( infixEx
+  ( withMonad
+  , withMonad'
+  , guardBenefits'
   ) where
 
 import Control.Applicative as A
+import Control.Monad (guard)
 import qualified Data.Traversable
 
 {--------------------}
 {----- 🚨 TL;DR -----}
 {--------------------}
+{---- Functor -----}
 -- * Functor: an abstractions that allows for mapping a function over values in a
 --   context (box), without altering the context itself
 -- * fmap: takes a function and a functor value, applies the function and
@@ -17,21 +21,11 @@ import qualified Data.Traversable
 --   --------        ---    ---
 --   Function      Functor Functor
 -- value to value
---
+{---- Applicative -----}
 -- * Applicative: an abstraction that allows for applying functions wrapped in
 --   a context to values in the same context
 --   Difference with functor: higher-level abstraction that allows to apply
 --   functions to multiple wrapped values in a context
--- * <*>: takes a functor value that has a function in it and another functor,
---   and extracts that function from the first functor and then maps it over
---   the second one
---   Works with a left and right operand
---
---   f (a -> b)   ->   f a -> f b
---   ----------        ---    ---
--- Functor function  Functor Functor
---  value to value
---
 -- * <$>: fmap version for applicative
 --   It puts something inside a box
 --   Can be used on functions as an input to <*>
@@ -42,13 +36,34 @@ import qualified Data.Traversable
 -- With f a functor     Function      Functor Functor
 --                   value to value
 --
--- * Monad: TODO
--- * >>= (bind): TODO
+-- * <*>: takes a functor value that has a function in it and another functor,
+--   and extracts that function from the first functor and then maps it over
+--   the second one
+--   Works with a left and right operand
+--
+--   f (a -> b)   ->   f a -> f b
+--   ----------        ---    ---
+-- Functor function  Functor Functor
+--  value to value
+--
+{----- Monad -----}
+-- * Monad: an extension of applicative that provides a way to sequence and
+--   compose then while preserving the contexts
+-- * >>= (bind):
 --
 --   (Monad m)  =>  m a -> (a -> m b)  ->  m b
 --   ---------      ---    ----------      ---
 -- With m a monad  Monad    Function      Monad
 --                       value to Monad
+--
+-- * return: wraps a value inside a monad
+--
+--   return :: a -> m a
+--             -    ---
+--           Value Monad
+--
+-- * do: chain monadic expressions
+--
 tldr = ()
 
 {-------------------}
@@ -268,11 +283,137 @@ law = ()
 -- An extension of applicative
 -- Provide a solution to the following problem: how do we apply a function of
 -- type `a -> m b` to a value of type `m a`
+-- Monad examples: Maybe, list
 --
--- The Monad function is called bind:
--- (>>=) :: (Monad m) => m a -> (a -> m b) -> m b
--- Example:
--- (>>=) :: (Monad Either) => Just Int -> (Int -> Just String) -> Just String
-m = do
-  let _ = (\x -> Just (x + 1))
+-- Monad functions:
+-- * (>>=), called bind:
+--   (>>=) :: (Monad m) => m a -> (a -> m b) -> m b
+--   Example:
+--   (>>=) :: (Monad Either) => Just Int -> (Int -> Just String) -> Just String
+--   Allows to preserve the context of the value to which the function applies
+-- * return: wraps a value inside a Monad
+-- * do: chain monadic expressions
+-- * (<-): extract a value from a Monad
+--
+-- Monad class:
+--  class Monad m where
+--    return :: a -> m a
+--    (>>=) :: m a -> (a -> m b) -> m b
+--    (>>) :: m a -> m b -> m b
+--    x >> y = x >>= \_ -> y
+--    fail :: String -> m a
+--    fail msg = error msg
+monadEx = Just 9 >>= \x -> return (x + 1) -- Just 10
+
+-- [(1,'a'),(1,'b'),(2,'a'),(2,'b')]
+monadEx2 = [1, 2] >>= \n -> ['a', 'b'] >>= \ch -> return (n, ch)
+
+-- do is another way to chain monadic values
+--
+-- Do expressions are written line by line; they may look as imperative code but
+-- they're just sequential, as each value in each line relies on the result of
+-- the previous ones, along with their contexts
+--
+-- Note: be it <- or let, the variable is assigned a non-monadic value
+-- Yet, <- takes a monadic value
+withDo :: Maybe String
+withDo = do
+  x <- Just 3 -- x is 3
+  y <- Just "!"
+  Just (show x ++ y) -- Just "3!"
+
+-- The same using (>>=)
+withoutDo :: Maybe String
+withoutDo = Just 3 >>= (\x -> Just "!" >>= (\y -> Just (show x ++ y))) -- Just "3!"
+
+-- If any of the values that we try to extract from are Nothing, the whole
+-- expression will result in a Nothing
+withDoNothing = do
+  x <- Just 3 -- x is 3
+  y <- Just "!"
+  Nothing
+  Just (show x ++ y) -- Just "3!"
+
+-- Return a Maybe Char from the first letter of a string using pattern matching
+monadPatternMatching :: String -> Maybe Char
+monadPatternMatching str = do
+  -- Failed pattern matching (e.g., "") returns a Nothing (fail function)
+  (x:xs) <- Just str
+  return x
+
+-- Applicative functors don't allow for the applicative values to interact with
+-- each other very much; at best, they can be used as parameters to a function
+-- by using the applicative style
+benefitsMonad = ()
+
+validateAge :: Int -> Maybe Int
+validateAge age =
+  if age >= 18
+    then Just age
+    else Nothing
+
+greet :: String -> String
+greet name = "Hello " ++ name
+
+-- Does not compile:
+-- withoutMonad age name = greet A.<$> (Just name) A.<*> validateAge age
+--                                      ---------        ---------------
+--                                     Maybe String         Maybe Int
+--                         ------------------------
+--                          String -> Maybe String
+--                     Should be a Maybe (Int -> String)
+withMonad :: Int -> String -> Maybe String
+withMonad age name = do
+  validAge <- validateAge age
+  return $ greet name
+
+withMonad' :: Int -> String -> Maybe String
+withMonad' age name = validateAge age >>= \_ -> return $ greet name
+
+--                    -----------         ---------------------------
+--                     Maybe Int                Lambda function
+--                                            Int -> Maybe String
+--
+del = ()
+
+{---------------------}
+{----- MonadPlus -----}
+{---------------------}
+-- The MonadPlus type class if for monads that can also act as monoids
+--
+-- Definition:
+-- class Monad m => MonadPlus m where
+--    mzero :: m a
+--    mplus :: m a -> m a -> m a
+--
+-- * mzero is the mempty synonym
+-- * mplus is the mappend synonym
+--
+-- [] implementation
+-- instance MonadPlus [] where
+--    mzero = []
+--    mplus = (++)
+monadPlus = ()
+
+-- guard function: if the guard succeeds, the result is an empty tuple
+-- guard :: (MonadPlus m) => Bool -> m ()
+--   guard True = return ()
+--   guard False = mzero
+guardEx = do
+  let _ = guard (4 > 2) :: Maybe () -- Just ()
+  let _ = guard (2 > 4) :: Maybe () -- Nothing
   ()
+
+-- When to use guard? As a filter for monadic values
+guardBenefits = do
+  let _ = guard (4 > 2) >> return "cool" :: [String] -- ["cool"]
+  let _ = guard (2 > 4) >> return "cool" :: [String] -- []
+  ()
+
+-- Note: the following is the same as
+-- [ x | x <- [1..50], '7' `elem` show x ]
+-- So, filtering in list comprehensions is the same as using guard
+guardBenefits' = do
+  x <- [1 .. 50]
+  guard ('7' `elem` show x)
+  return x -- [7,17,27,37,47]
