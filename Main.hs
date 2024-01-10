@@ -50,11 +50,14 @@ zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- No
 
 matching = 0
 
-foo = length ([4] ++ [] ++ [])
-
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = AdvancedTypes.guardBenefits'
+  let v = bar
   print v
---  let v = Just 9 >>= (\x -> return (x > 8))
---  print v
+
+bar = do
+  first <- foo 1
+  foo first
+
+foo :: Int -> [Int]
+foo a = [a, a + 1]

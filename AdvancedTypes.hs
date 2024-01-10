@@ -294,6 +294,8 @@ law = ()
 -- * return: wraps a value inside a Monad
 -- * do: chain monadic expressions
 -- * (<-): extract a value from a Monad
+-- * (<=<), called fish
+--   Used for function composition (similar to .)
 --
 -- Monad class:
 --  class Monad m where
@@ -333,6 +335,15 @@ withDoNothing = do
   y <- Just "!"
   Nothing
   Just (show x ++ y) -- Just "3!"
+
+-- 🚨 In case of an array, the elements are bound to the `x` variable element by
+-- element
+withDoArray = do
+  x <- foo 1 -- x is first bound to 1 and then 2
+  foo x -- [1,2,2,3]
+
+foo :: Int -> [Int]
+foo a = [a, a + 1]
 
 -- Return a Maybe Char from the first letter of a string using pattern matching
 monadPatternMatching :: String -> Maybe Char
@@ -376,6 +387,28 @@ withMonad' age name = validateAge age >>= \_ -> return $ greet name
 --
 del = ()
 
+-- Monad laws
+--
+-- * First law: left identity
+--   If we take a value, put it in a default context with return and then feed
+--   it to a function using >>=, that's the same as just taking the value and
+--   applying the function to it
+--   return x >>= f   is equivalent to   f x
+--
+--   return 3 >>= (\x -> Just (x+100000))
+--   (\x -> Just (x+100000)) 3
+--   Just 100003
+--
+-- * Second law: right identity
+--   If we have a monadic value and we use >>= to feed it to return, the result
+--   is our original monadic value
+--   m >>= return   is equivalent to   just m
+--
+-- * Third law: associativity
+--   When we have a chain of monadic function applications with >>=, it
+--   shouldn’t matter how they’re nested
+--   (m >>= f) >>= g   is equivalent to   m >>= (\x -> f x >>= g)
+--
 {---------------------}
 {----- MonadPlus -----}
 {---------------------}
