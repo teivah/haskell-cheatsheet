@@ -50,14 +50,12 @@ zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- No
 
 matching = 0
 
+-- Functions.hs
+-- Lists.hs
+-- IO.hs
+-- Types.hs
+-- AdvancedTypes.hs
+--
 -- Usually, we don't specify a type declaration for main
 main = do
-  let v = bar
-  print v
-
-bar = do
-  first <- foo 1
-  foo first
-
-foo :: Int -> [Int]
-foo a = [a, a + 1]
+  print "Hello, World!"

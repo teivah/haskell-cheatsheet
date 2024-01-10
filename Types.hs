@@ -1,5 +1,5 @@
 module Types
-  ( foldableEx
+  ( 
   ) where
 
 import Data.List

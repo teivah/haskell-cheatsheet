@@ -1,7 +1,5 @@
 module AdvancedTypes
-  ( withMonad
-  , withMonad'
-  , guardBenefits'
+  ( 
   ) where
 
 import Control.Applicative as A
