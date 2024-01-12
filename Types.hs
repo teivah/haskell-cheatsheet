@@ -6,6 +6,7 @@ import Data.List
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import qualified Data.Set as Set
+import Data.Ord (comparing)
 
 {---------------}
 {----- 101 -----}
@@ -99,15 +100,25 @@ maybeGet' = fromMaybe 0 m -- 5
 {---------------}
 -- Map example
 mapDSEx = do
+  -- Empty
+  let m = Map.empty
   -- Create
   let m = Map.fromList [(1, "one"), (2, "two"), (3, "three")]
   -- Lookup
   let v = Map.lookup 1 m -- Maybe string
-  -- Insert (note how the map is immutable)
+  -- Check if a value exists
+  let exists = Map.member 1 m
+  -- Insert (m is not modified, we have to use the resulting map)
   let m2 = Map.insert 10 "ten" m
+  -- Update
+  let m2 = Map.insertWith (++) 1 "foo" -- [(1,"onefoo")...]
   -- When a duplicate is found, do an action
   let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
   m
+  -- Pattern matching on lookup
+    where v = case Map.lookup 1 (Map.empty :: Map.Map Int Int) of
+            Just value -> value
+            Nothing -> error "value not found"
 
 -- Set example
 setDSEx = do
@@ -168,6 +179,17 @@ data DataEx
 
 -- Thanks to Ord type class, we can compare values
 ordEx = Foo < Bar
+
+-- To compare two values
+compareEx :: DataEx -> DataEx -> Ordering
+compareEx a b = compare a b
+
+-- Manual implementation to understand what is returned
+compareEx' :: DataEx -> DataEx -> Ordering
+compareEx' a b
+  | a < b = LT
+  | a > b = GT
+  | otherwise = EQ
 
 -- Thanks to Bounded type class, we can get the min or max value
 boundedEx = (minBound :: DataEx, maxBound :: DataEx) -- (Foo,Baz)
