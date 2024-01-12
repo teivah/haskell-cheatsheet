@@ -5,8 +5,8 @@ module Types
 import Data.List
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
-import qualified Data.Set as Set
 import Data.Ord (comparing)
+import qualified Data.Set as Set
 
 {---------------}
 {----- 101 -----}
@@ -116,9 +116,11 @@ mapDSEx = do
   let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
   m
   -- Pattern matching on lookup
-    where v = case Map.lookup 1 (Map.empty :: Map.Map Int Int) of
-            Just value -> value
-            Nothing -> error "value not found"
+  where
+    v =
+      case Map.lookup 1 (Map.empty :: Map.Map Int Int) of
+        Just value -> value
+        Nothing -> error "value not found"
 
 -- Set example
 setDSEx = do

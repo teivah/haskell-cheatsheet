@@ -2,6 +2,8 @@ module Functions
   ( 
   ) where
 
+import Data.List (foldl')
+
 {---------------}
 {----- 101 -----}
 {---------------}
@@ -284,6 +286,7 @@ largestDivisible = head (filter p [99999,99999 ..])
 -- as the predicates is true
 firstWord = takeWhile (/= ' ') "foo bar baz" -- foo
 
+-- TODO: https://github.com/hasura/graphql-engine/pull/2933#discussion_r328821960
 -- Fold
 -- Folds allow to reduce a data structure to a single value
 -- Use case: traverse a list to return a value
@@ -294,6 +297,10 @@ sumList x = foldl (\acc a -> acc + a) 0 x
 
 -- Equivalent to
 sumList' x = foldl (+) 0 x
+
+-- 🚨 foldl is not tail-recursive, and can lead to a stack overflow
+-- In this case, we should uses fold', a stricter version
+foldl2 = foldl' (\acc a -> acc + 1) 0 [1 .. 100]
 
 -- Fold from the right
 -- Notice how in the lambda, the accumulator value comes last compared to foldl
