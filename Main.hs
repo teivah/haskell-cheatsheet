@@ -45,8 +45,6 @@ pairSecondElement = snd (1, 2)
 -- Triple (tuple of three)
 triple = (1, 2, 3)
 
--- Produce a list of pairs based on the matching elements in a list
-zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- Note that "c" and "d" are ignored
 
 matching = 0
 

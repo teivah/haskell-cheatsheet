@@ -112,9 +112,13 @@ mapDSEx = do
   let m2 = Map.insert 10 "ten" m
   -- Update
   let m2 = Map.insertWith (++) 1 "foo" -- [(1,"onefoo")...]
+  -- Delete
+  let m2 = Map.delete 1 m
   -- When a duplicate is found, do an action
   let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
-  m
+  -- Iterate over
+  let _ = map (\(key, value) -> (key, value)) (Map.toList m)
+  ()
   -- Pattern matching on lookup
   where
     v =

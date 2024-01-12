@@ -66,6 +66,10 @@ listSum = sum [1, 2, 3] -- 6
 -- Product of the elements in a list
 listProduct = product [1, 2, 3] -- 6
 
+-- Check if all the elements
+listAll :: [Int] -> Bool
+listAll = all (== 0)
+
 -- Check if an element is in a list
 listCheck = 3 `elem` [1, 2, 3] -- True
 
@@ -86,6 +90,9 @@ listRepeat = repeat 5 -- [5,5,5,5,5,...]
 
 -- Repeat the same element a certain number of times
 listReplicate = replicate 3 5 -- [5,5,5]
+
+-- Produce a list of pairs based on the matching elements in a list
+zipLists = zip [1, 2, 3] ["a", "b", "c", "d"] -- [(1,"a"),(2,"b"),(3,"c")] -- Note that "c" and "d" are ignored
 
 {-------------------------------}
 {----- List comprehensions -----}

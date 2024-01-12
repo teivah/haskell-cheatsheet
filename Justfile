@@ -1,4 +1,4 @@
-build:
+dev:
   ghcid --command="stack ghci Main.hs" --test=":main"
 
 format:
