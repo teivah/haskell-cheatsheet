@@ -18,6 +18,9 @@ import Types
 -- Note that `as S` allows to create an alias
 import qualified Geometry.Sphere as S hiding (volume)
 
+{-------------------------------}
+{---- Theoretical concepts -----}
+{-------------------------------}
 -- Referential transparency: key concept in FP, refers to an aspect of the
 -- behavior of pure functions
 -- * Substitutability: an expression is said to be referentially transparent if
