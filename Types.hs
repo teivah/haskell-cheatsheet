@@ -32,6 +32,23 @@ idEx f = id f
 generic :: [a] -> a
 generic a = head a
 
+-- Tuples
+-- Store heterogeneous elements as a single value
+-- A tuple is of a fixed size, we can't add elements
+tuple = (1, "a", 3.2)
+
+-- Pair (tuple of two)
+pair = (1, 2)
+
+-- Access the first element (pair only)
+pairFirstElement = fst (1, 2)
+
+-- Access the second element (pair only)
+pairSecondElement = snd (1, 2)
+
+-- Triple (tuple of three)
+triple = (1, 2, 3)
+
 -- Type class is an *interface* that defines some behavior
 -- If a type is an instance of type class, then it supports and implements the
 -- behavior the type class describes

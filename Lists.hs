@@ -144,3 +144,11 @@ removeUppercase st = [c | c <- st, c `elem` ['a' .. 'z']]
 
 -- Get the words in a string
 wordsEx = words "foo bar baz" -- ["foo","bar","baz"]
+
+{----------------------------}
+{----- Difference lists -----}
+{----------------------------}
+-- A difference list is a function that takes a list and prepends another list
+-- to it
+-- For example, the difference list equivalent of a list like [1,2,3] is:
+differenceListEx = \xs -> [1, 2, 3] ++ xs

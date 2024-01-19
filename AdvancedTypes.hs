@@ -3,15 +3,17 @@ module AdvancedTypes
   ) where
 
 import Control.Applicative as A
-import Control.Monad (guard)
+import Control.Monad (filterM, foldM, guard, join)
+import Control.Monad.State
+import Control.Monad.Writer
 import qualified Data.Traversable
 
 {--------------------}
 {----- 🚨 TL;DR -----}
 {--------------------}
 {---- Functor -----}
--- * Functor: an abstractions that allows for mapping a function over values in a
---   context (box), without altering the context itself
+-- * Functor: an abstractions that allows for mapping a function over values in
+--   a context (box), without altering the context itself
 -- * fmap: takes a function and a functor value, applies the function and
 --   applies that function over the functor value
 --
@@ -61,6 +63,10 @@ import qualified Data.Traversable
 --           Value Monad
 --
 -- * do: chain monadic expressions
+--
+-- TODO To be confirmed:
+-- Often, when a type is a Monad, dev first write up a Monad instance, and then
+-- make an Applicative instance by just saying that pure is return an <*> is ap
 --
 tldr = ()
 
@@ -383,6 +389,28 @@ withMonad' age name = validateAge age >>= \_ -> return $ greet name
 --                     Maybe Int                Lambda function
 --                                            Int -> Maybe String
 --
+{---- Utility functions -----}
+{- join -}
+joinEx = join [[1, 2, 3], [4, 5, 6]] -- [1,2,3,4,5,6]
+
+{- filterM -}
+filterEx = filterM isEvenM [1, 2, 3] -- Just [2]
+
+isEvenM :: Int -> Maybe Bool
+isEvenM x = Just (even x)
+
+-- Powerset (set of all subsets) example using filterM
+powersetEx = filterM (\x -> [True, False]) [1, 2] -- [1,2], [1], [2], []
+
+{- foldM -}
+-- foldl for monads
+foldMEx = foldM binSmalls 0 [2, 8, 3, 1] -- Just 14
+
+binSmalls :: Int -> Int -> Maybe Int
+binSmalls acc x
+  | x > 9 = Nothing
+  | otherwise = Just (acc + x)
+
 del = ()
 
 -- Monad laws
@@ -448,3 +476,75 @@ guardBenefits' = do
   x <- [1 .. 50]
   guard ('7' `elem` show x)
   return x -- [7,17,27,37,47]
+
+{-------------------------}
+{----- Useful monads -----}
+{-------------------------}
+{------ Control.Monad.Writer -----}
+-- Used for computations that produce a value along with some additional output
+-- Example: log or trace
+logNumber :: Int -> Writer [String] Int
+logNumber x = writer (x, ["Got " ++ show x])
+
+writerEx x = runWriter (logNumber x) -- (5,["Got 5"])
+
+{----- Control.Monad.State -----}
+-- Handles all the state business, without impacting Haskell purity
+-- Proves a newtype tat wraps stateful computations
+type Stack = [Int]
+
+-- Without State
+pop' :: Stack -> (Int, Stack)
+pop' (x:xs) = (x, xs)
+
+push' :: Int -> Stack -> ((), Stack)
+push' a xs = ((), a : xs)
+
+stackEx' :: Stack -> (Int, Stack)
+stackEx' stack =
+  let ((), newStack1) = push' 3 stack
+      (a, newStack2) = pop' newStack1
+   in pop' newStack2
+
+pop :: State Stack Int
+pop = state $ \(x:xs) -> (x, xs)
+
+push :: Int -> State Stack ()
+push a = state $ \xs -> ((), a : xs)
+
+stackEx :: State Stack Int
+stackEx = do
+  push 3
+  a <- pop
+  pop
+
+{------------------}
+{----- Zipper -----}
+{------------------}
+-- A zipper is a data structure that provides a way to navigate and modify a
+-- hierarchical or nested structure
+-- Consists of a context that surrounds the focused element
+type ListZipper a = ([a], [a])
+
+moveRight :: ListZipper a -> ListZipper a
+moveRight (left, x:right) = (x : left, right)
+moveRight z = z
+
+moveLeft :: ListZipper a -> ListZipper a
+moveLeft (x:left, right) = (left, x : right)
+moveLeft z = z
+
+insert :: a -> ListZipper a -> ListZipper a
+insert x (left, right) = (left, x : right)
+
+replace :: a -> ListZipper a -> ListZipper a
+replace x (left, _:right) = (left, x : right)
+replace x z = z
+
+zipperEx :: ListZipper Int
+zipperEx =
+  let zipper = ([], [1, 2, 3, 4, 5]) -- Focus on 1
+      movedRight = moveRight zipper -- Focus on 2
+      inserted = insert 10 movedRight -- Insert 10 before 2
+      replaced = replace 20 inserted -- Replace 10 with 20
+   in replaced

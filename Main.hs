@@ -18,42 +18,23 @@ import Types
 -- Note that `as S` allows to create an alias
 import qualified Geometry.Sphere as S hiding (volume)
 
--- TODO
--- foo` denotes either a strict version of a function (i.e., not lazy) or a slightly modified version of a function or variable with a similar name
+-- Referential transparency: key concept in FP, refers to an aspect of the
+-- behavior of pure functions
+-- * Substitutability: an expression is said to be referentially transparent if
+--   it can be replaced with its corresponding value without changing the
+--   program's behavior
+-- * Predictability and reasoning: makes it easier to reason about the behavior
+--   of a program
+-- * No side effects: implies that functions do not have side effects
 --
--- TODO
---
--- Tracing
-tracingEx = trace (show (foo)) $ foo
-  where
-    foo = 42
-
--- Tuples
--- Store heterogeneous elements as a single value
--- A tuple is of a fixed size, we can't add elements
-tuple = (1, "a", 3.2)
-
--- Pair (tuple of two)
-pair = (1, 2)
-
--- Access the first element (pair only)
-pairFirstElement = fst (1, 2)
-
--- Access the second element (pair only)
-pairSecondElement = snd (1, 2)
-
--- Triple (tuple of three)
-triple = (1, 2, 3)
-
-
-matching = 0
-
+-- See:
 -- Functions.hs
 -- Lists.hs
 -- IO.hs
 -- Types.hs
 -- AdvancedTypes.hs
+-- Others.hs
 --
--- Usually, we don't specify a type declaration for main
+-- Main definition (usually, we don't specify a type declaration for main)
 main = do
   print "Hello, World!"
