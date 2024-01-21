@@ -4,6 +4,7 @@ module AdvancedTypes
 
 import Control.Applicative as A
 import Control.Monad (filterM, foldM, guard, join)
+import Control.Monad (replicateM)
 import Control.Monad.State
 import Control.Monad.Writer
 import qualified Data.Traversable
@@ -507,8 +508,9 @@ stackEx' stack =
    in pop' newStack2
 
 pop :: State Stack Int
-pop = state $ \(x:xs) -> (x, xs)
+pop = state $ \(x:xs) -> (x, xs) -- First is the returned value, xs is the stack
 
+-- We don't return any meaningful value, this is the purpose of Stack ()
 push :: Int -> State Stack ()
 push a = state $ \xs -> ((), a : xs)
 
@@ -517,6 +519,15 @@ stackEx = do
   push 3
   a <- pop
   pop
+
+-- execState takes an initial Stack and applies the sequence of operations
+-- defined in stackEx
+execStateEx :: Stack -> Stack
+execStateEx initialStack = execState stackEx initialStack
+
+-- replicateM repeats the sequence of operations in stackEx n times
+replicateMEx :: Stack -> Int -> Stack
+replicateMEx initialStack n = execState (replicateM n stackEx) initialStack
 
 {------------------}
 {----- Zipper -----}

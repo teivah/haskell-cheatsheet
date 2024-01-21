@@ -4,7 +4,7 @@ module Types
 
 import Data.List
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromJust, fromMaybe)
 import Data.Ord (comparing)
 import qualified Data.Set as Set
 
@@ -107,10 +107,16 @@ maybeGet =
     Just n -> n
     Nothing -> -1
 
-maybeGet' :: Int
-maybeGet' = fromMaybe 0 m -- 5
+-- We can extract the value using fromMaybe and a default value
+fromMaybeEx :: Int
+fromMaybeEx = fromMaybe 0 m -- 5
   where
     m = Just 5
+
+-- Version without a default value (the runtime crashes is the value is Nothing)
+fromJustEx = do
+  let v = Just 5
+  fromJust v
 
 {---------------}
 {----- Map -----}
@@ -123,18 +129,29 @@ mapDSEx = do
   let m = Map.fromList [(1, "one"), (2, "two"), (3, "three")]
   -- Lookup
   let v = Map.lookup 1 m -- Maybe string
+  let v = Map.findWithDefault "default" 1 m
   -- Check if a value exists
   let exists = Map.member 1 m
   -- Insert (m is not modified, we have to use the resulting map)
-  let m2 = Map.insert 10 "ten" m
-  -- Update
-  let m2 = Map.insertWith (++) 1 "foo" -- [(1,"onefoo")...]
+  let _ = Map.insert 10 "ten" m
+  -- 🚨 Update: adjust applies a function to the value associated with a key
+  -- using a unary function
+  let _ = Map.adjust (+ 1) 1 (Map.fromList [(1, 1)]) -- [(1, 2)]
+  -- 🚨 Update: insertWith is for combining an existing and a new value using a
+  -- binary function
+  let _ = Map.insertWith (++) 1 "foo" m -- [(1,"onefoo")...]
+  -- 🚨 Update: alter is more general, we can modify, insert, or delete a key
+  let _ = Map.alter (\x -> Just (1 + fromMaybe 0 x)) 1 (Map.empty :: Map.Map Int Int)
   -- Delete
   let m2 = Map.delete 1 m
   -- When a duplicate is found, do an action
   let m = Map.fromListWith (+) [(1, 1), (2, 3), (2, 4)] -- fromList [(1,1)(2,7)]
   -- Iterate over
   let _ = map (\(key, value) -> (key, value)) (Map.toList m)
+  let _ = foldl (\acc (_, v) -> acc + v) 0 (Map.toList m)
+  let _ = foldl (\acc k -> acc) 0 (Map.keys m)
+  -- Count the number of values
+  let _ = foldl (\acc a -> Map.insertWith (+) a 1 acc) Map.empty [1, 2, 2, 3]
   ()
   -- Pattern matching on lookup
   where
