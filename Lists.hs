@@ -45,6 +45,9 @@ listLength = length [1, 2, 3] -- 3
 -- Check if list is empty
 listNull = null [] -- True
 
+-- Filter
+listFilter = filter (\x -> x `mod` 2 == 0) [1, 2, 3] -- [2]
+
 -- Reverse a list
 listReverse = reverse [1, 2, 3] -- [3,2,1]
 
